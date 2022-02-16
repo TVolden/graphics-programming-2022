@@ -156,9 +156,27 @@ void drawPlane(){
     //  you will need to transform the pose of the pieces of the plane by manipulating glm matrices and uploading a
     //  uniform mat4 transform matrix to the vertex shader
 
+    auto transform = glm::mat4(1.0f);
+    auto transformID = glGetUniformLocation(shaderProgram->ID, "transform");
+    glUniformMatrix4fv(transformID, 1, GL_FALSE, &transform[0][0]);
+
     // body
     drawSceneObject(planeBody);
     // right wing
+    drawSceneObject(planeWing);
+    auto mirror = glm::scale(glm::vec3(-1, 1, 1));
+    glUniformMatrix4fv(transformID, 1, GL_FALSE, &mirror[0][0]);
+    // left wing
+    drawSceneObject(planeWing);
+
+    auto translate = glm::scale(glm::vec3(0.5f)) * glm::translate(glm::vec3(0.0f, -1.0f, 0.0f));
+    glUniformMatrix4fv(transformID, 1, GL_FALSE, &translate[0][0]);
+    // tail right
+    drawSceneObject(planeWing);
+
+    translate = glm::scale(glm::vec3(0.5f)) * mirror * glm::translate(glm::vec3(0.0f, -1.0f, 0.0f));
+    glUniformMatrix4fv(transformID, 1, GL_FALSE, &translate[0][0]);
+    // tail left
     drawSceneObject(planeWing);
 
 }
