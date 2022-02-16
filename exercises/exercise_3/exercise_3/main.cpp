@@ -121,8 +121,15 @@ int main()
         auto frameStart = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> appTime = frameStart - begin;
         currentTime = appTime.count();
-
+        float deltaTime = currentTime - lastTime;
         processInput(window);
+
+        // Update
+        planePosition += glm::vec2(sin(planeHeading), cos(planeHeading)) * deltaTime;
+        if (planePosition.x < -1) planePosition.x = 1;
+        if (planePosition.y < -1) planePosition.y = 1;
+        if (planePosition.x > 1) planePosition.x = -1;
+        if (planePosition.y > 1) planePosition.y = -1;
 
         glClearColor(0.5f, 0.5f, 1.0f, 1.0f);
 
@@ -132,7 +139,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram->use();
-        drawPlane(currentTime - lastTime);
+        drawPlane(deltaTime);
         lastTime = currentTime;
 
         // we swap buffers because we have two color buffers:
@@ -160,7 +167,13 @@ void drawPlane(float deltaTime){
     //  you will need to transform the pose of the pieces of the plane by manipulating glm matrices and uploading a
     //  uniform mat4 transform matrix to the vertex shader
 
-    auto transform = glm::mat4(1.0f);
+    // World <- Model
+    auto modelToWorld = glm::scale(glm::vec3(0.1f));
+    modelToWorld = glm::rotateY(glm::radians(tiltAngle)) * modelToWorld;
+    modelToWorld = glm::rotateZ(-planeHeading) * modelToWorld;
+    modelToWorld = glm::translate(glm::vec3(planePosition, 0)) * modelToWorld;
+
+    auto transform = modelToWorld;
     shaderProgram->setMat4("transform", transform);
 
     // body
@@ -169,22 +182,21 @@ void drawPlane(float deltaTime){
     // right wing
     drawSceneObject(planeWing);
 
-
-    transform = glm::scale(glm::vec3(-1, 1, 1));
+    transform = modelToWorld * glm::scale(glm::vec3(-1, 1, 1));
     shaderProgram->setMat4("transform", transform);
 
     // left wing
     drawSceneObject(planeWing);
 
 
-    transform = glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f));
+    transform = modelToWorld * glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f));
     shaderProgram->setMat4("transform", transform);
 
     // tail right
     drawSceneObject(planeWing);
 
 
-    transform = glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f)) * glm::scale(glm::vec3(-1, 1, 1));
+    transform = modelToWorld * glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f)) * glm::scale(glm::vec3(-1, 1, 1));
     shaderProgram->setMat4("transform", transform);
 
     // tail left
@@ -192,7 +204,7 @@ void drawPlane(float deltaTime){
 
     propellerAngle += 15;
     propellerAngle = propellerAngle % 360;
-    transform = glm::translate(glm::vec3(0, 0.5f, 0)) * glm::scale(glm::vec3(0.5f)) * glm::rotateX(glm::radians(90.0f)) * glm::rotateZ(glm::radians((float)propellerAngle));
+    transform = modelToWorld * glm::translate(glm::vec3(0, 0.5f, 0)) * glm::scale(glm::vec3(0.5f)) * glm::rotateX(glm::radians(90.0f)) * glm::rotateZ(glm::radians((float)propellerAngle));
     shaderProgram->setMat4("transform", transform);
     drawSceneObject(planePropeller);
 }
@@ -278,6 +290,25 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
     // TODO 3.4 control the plane (turn left and right) using the A and D keys
     // you will need to read A and D key press inputs
+    bool turning = false;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        planeHeading -= 0.025f;
+        tiltAngle -= 5.0f;
+        turning = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        planeHeading += 0.025f;
+        tiltAngle += 5.0f;
+        turning = true;
+    }
+    if (!turning && tiltAngle != 0) {
+        tiltAngle -= glm::sign(tiltAngle) * 5.0f;
+    }
+
+    tiltAngle = glm::clamp(tiltAngle, -45.0f, 45.0f);
+
     // if GLFW_KEY_A is GLFW_PRESS, plane turn left
     // if GLFW_KEY_D is GLFW_PRESS, plane turn right
 
