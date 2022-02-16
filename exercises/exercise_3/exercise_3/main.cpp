@@ -1,3 +1,4 @@
+#include <math.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -26,7 +27,7 @@ unsigned int createElementArrayBuffer(std::vector<unsigned int> &array);
 unsigned int createVertexArray(std::vector<float> &positions, std::vector<float> &colors, std::vector<unsigned int> &indices);
 void setup();
 void drawSceneObject(SceneObject obj);
-void drawPlane();
+void drawPlane(float deltaTime);
 
 // glfw functions
 // --------------
@@ -45,8 +46,10 @@ SceneObject planeWing;
 SceneObject planePropeller;
 
 float currentTime;
+float lastTime;
 Shader* shaderProgram;
 
+int propellerAngle = 0.0f;
 float planeHeading = 0.0f;
 float tiltAngle = 0.0f;
 float planeSpeed = 0.005f;
@@ -129,7 +132,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram->use();
-        drawPlane();
+        drawPlane(currentTime - lastTime);
+        lastTime = currentTime;
 
         // we swap buffers because we have two color buffers:
         // one with the currently displayed image (aka front buffer) and one where we draw into (aka back buffer)
@@ -151,34 +155,46 @@ int main()
 }
 
 
-void drawPlane(){
+void drawPlane(float deltaTime){
     // TODO 3.all create and apply your transformation matrices here
     //  you will need to transform the pose of the pieces of the plane by manipulating glm matrices and uploading a
     //  uniform mat4 transform matrix to the vertex shader
 
     auto transform = glm::mat4(1.0f);
-    auto transformID = glGetUniformLocation(shaderProgram->ID, "transform");
-    glUniformMatrix4fv(transformID, 1, GL_FALSE, &transform[0][0]);
+    shaderProgram->setMat4("transform", transform);
 
     // body
     drawSceneObject(planeBody);
+
     // right wing
     drawSceneObject(planeWing);
-    auto mirror = glm::scale(glm::vec3(-1, 1, 1));
-    glUniformMatrix4fv(transformID, 1, GL_FALSE, &mirror[0][0]);
+
+
+    transform = glm::scale(glm::vec3(-1, 1, 1));
+    shaderProgram->setMat4("transform", transform);
+
     // left wing
     drawSceneObject(planeWing);
 
-    auto translate = glm::scale(glm::vec3(0.5f)) * glm::translate(glm::vec3(0.0f, -1.0f, 0.0f));
-    glUniformMatrix4fv(transformID, 1, GL_FALSE, &translate[0][0]);
+
+    transform = glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f));
+    shaderProgram->setMat4("transform", transform);
+
     // tail right
     drawSceneObject(planeWing);
 
-    translate = glm::scale(glm::vec3(0.5f)) * mirror * glm::translate(glm::vec3(0.0f, -1.0f, 0.0f));
-    glUniformMatrix4fv(transformID, 1, GL_FALSE, &translate[0][0]);
+
+    transform = glm::translate(glm::vec3(0.0f, -0.5f, 0.0f)) * glm::scale(glm::vec3(0.5f)) * glm::scale(glm::vec3(-1, 1, 1));
+    shaderProgram->setMat4("transform", transform);
+
     // tail left
     drawSceneObject(planeWing);
 
+    propellerAngle += 15;
+    propellerAngle = propellerAngle % 360;
+    transform = glm::translate(glm::vec3(0, 0.5f, 0)) * glm::scale(glm::vec3(0.5f)) * glm::rotateX(glm::radians(90.0f)) * glm::rotateZ(glm::radians((float)propellerAngle));
+    shaderProgram->setMat4("transform", transform);
+    drawSceneObject(planePropeller);
 }
 
 void drawSceneObject(SceneObject obj){
@@ -202,6 +218,11 @@ void setup(){
                                       airplane.planeWingIndices);
     planeWing.vertexCount = airplane.planeWingIndices.size();
 
+    // initialize plane wing mesh objects
+    planePropeller.VAO = createVertexArray(airplane.planePropellerVertices,
+        airplane.planePropellerColors,
+        airplane.planePropellerIndices);
+    planePropeller.vertexCount = airplane.planePropellerIndices.size();
 }
 
 
