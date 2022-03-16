@@ -8,17 +8,18 @@ uniform mat4 view; // represents the view matrix
 uniform mat4 viewProjection;  // represents the view and projection matrices combined
 
 // TODO 7.3 : Add an 'out' variable for texture coordinates
+out vec2 txtCoord;
 
 // TODO 7.4 : Add an 'out' variable for view normal
-
+out vec3 norm;
 
 void main() {
 
    // TODO 7.3 : Read the texture coordinates from the attribute and pass it to the fragment shader
-
+   txtCoord = textCoord;
 
    // TODO 7.4 : Compute the normal in VIEW space and pass it to the fragment shader
-
+   norm = (view * model * vec4(normal, 0.0f)).xyz;
 
    // Final vertex position (for opengl rendering, not for lighting)
    gl_Position = viewProjection * model * vec4(vertex, 1.0f);
