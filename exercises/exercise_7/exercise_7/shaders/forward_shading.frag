@@ -50,10 +50,8 @@ void main()
    float attenuation = 1.0f / (distToLight * distToLight);
 
    // TODO 7.1 : Compute the falloff using lightRadius and smoothstep function
-   float falloff = 1.0f;
+   float falloff = smoothstep(lightRadius, lightRadius * 0.5f, distToLight);
 
    // TODO 7.1 : Multiply the attenuation by the falloff we just computed
-
-
-   FragColor = vec4(ambient + (diffuse + specular) * attenuation, 1.0);
+   FragColor = vec4(ambient + (diffuse + specular) * attenuation * falloff, 1.0);
 }
