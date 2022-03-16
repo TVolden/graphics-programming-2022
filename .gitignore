@@ -3,6 +3,7 @@
 /.idea/*
 /student_projects/*
 /out
+/Library/*
 
 .DS_Store
 
