@@ -4,6 +4,7 @@
 /student_projects/*
 /out
 /Library/*
+Library/
 
 .DS_Store
 
