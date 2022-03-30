@@ -127,7 +127,7 @@ struct Config
 
 
     //TODO 9.1 9.2 9.4 9.5 and 9.6 : Add configuration values
-
+    float exposure = 1.0f;
 
 
 
@@ -381,14 +381,14 @@ int main()
             //TODO 9.1 : Composition pass
             {
                 //TODO 9.1 : Change the shader used for this pass to compose instead of copy
-                shader = copy_shader;
+                shader = compose_shader; // copy_shader;
                 shader->use();
 
                 //TODO 9.4 : Add tempTextures[0] as GL_TEXTURE1 and pass it as "BloomTexture"
 
 
                 //TODO 9.1 : Add the exposure uniform
-
+                shader->setFloat("exposure", config.exposure);
 
                 //TODO 9.2 : Add the color grading uniforms
 
@@ -496,7 +496,7 @@ void drawGui(){
 
         ImGui::Text("Post-processing: ");
         //TODO 9.1 9.2 9.4 9.5 and 9.6 : Add UI for configuration values
-
+        ImGui::SliderFloat("global brightness", &config.exposure, 0.0f, 1.0f);
 
 
 
@@ -662,7 +662,7 @@ void initFrameBuffers(GLFWwindow* window)
     // TODO 9.1 : Change the format of the accumulation buffer to 16bit floating point (4 components)
     glGenTextures(1, &gAccum);
     glBindTexture(GL_TEXTURE_2D, gAccum);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 

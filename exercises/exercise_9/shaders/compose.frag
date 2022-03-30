@@ -9,7 +9,7 @@ uniform sampler2D SourceTexture;
 
 //TODO 9.1 and 9.2 : Add uniforms here
 
-
+uniform float exposure;
 
 
 // variables from vertex shader
@@ -58,7 +58,7 @@ void main()
 
 
    //TODO 9.1 : Apply tone mapping using the exposure uniform
-   vec3 color = hdrColor;
+   vec3 color = hdrColor * exposure;
 
 
    //TODO 9.2 : Modify contrast
