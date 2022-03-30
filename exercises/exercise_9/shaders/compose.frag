@@ -10,7 +10,10 @@ uniform sampler2D SourceTexture;
 //TODO 9.1 and 9.2 : Add uniforms here
 
 uniform float exposure;
-
+uniform float contrast;
+uniform float hueShift;
+uniform float saturation;
+uniform vec3 colorFilter;
 
 // variables from vertex shader
 in vec2 textureCoordinates;
@@ -55,27 +58,29 @@ void main()
 
    //TODO 9.4 : Sample bloom texture and add the bloom to HDR color
 
-
-
    //TODO 9.1 : Apply tone mapping using the exposure uniform
-   vec3 color =  vec3(1 - exp(-hdrColor * exposure));
-
+   vec3 color = vec3(1.0) - exp(-hdrColor * exposure);
+   color = clamp(color, 0.0f, 1.0f);
 
    //TODO 9.2 : Modify contrast
-
-
+   vec3 grey = vec3(0.5f);
+   color = (color - grey) * contrast + grey;
+   color = clamp(color, 0.0f, 1.0f);
 
    //TODO 9.2 : Modify hue
 
-
+   vec3 hsv = RGBToHSV(color);
+   hsv.x = fract(hsv.x + hueShift);
+   color = HSVToRGB(hsv);
+   color = clamp(color, 0.0f, 1.0f);
 
    //TODO 9.2 : Modify saturation
-
-
+   float luminance = GetLuminance(color);
+   color = (color - luminance) * saturation + luminance;
+   color = clamp(color, 0.0f, 1.0f);
 
    //TODO 9.2 : Apply color filter
-
-
+   color = color * colorFilter;
 
    FragColor = vec4(color, 1.0f);
 }

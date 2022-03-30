@@ -128,9 +128,10 @@ struct Config
 
     //TODO 9.1 9.2 9.4 9.5 and 9.6 : Add configuration values
     float exposure = 1.0f;
-
-
-
+    float contrast = 1.0f;
+    float hueShift = 0.0f;
+    float saturation = 1.0f;
+    glm::vec3 colorFilter = glm::vec3(1.0f, 1.0f, 1.0f);
 
 } config;
 
@@ -391,9 +392,10 @@ int main()
                 shader->setFloat("exposure", config.exposure);
 
                 //TODO 9.2 : Add the color grading uniforms
-
-
-
+                shader->setFloat("contrast", config.contrast);
+                shader->setFloat("hueShift", config.hueShift);
+                shader->setFloat("saturation", config.saturation);
+                shader->setVec3("colorFilter", config.colorFilter);
 
                 drawFullscreenPass("SourceTexture", gAccum);
             }
@@ -497,9 +499,10 @@ void drawGui(){
         ImGui::Text("Post-processing: ");
         //TODO 9.1 9.2 9.4 9.5 and 9.6 : Add UI for configuration values
         ImGui::SliderFloat("global brightness", &config.exposure, 0.0f, 1.0f);
-
-
-
+        ImGui::SliderFloat("contrast", &config.contrast, 0.5f, 1.5f);
+        ImGui::SliderFloat("hue shift", &config.hueShift, -0.5f, 0.5f);
+        ImGui::SliderFloat("saturation", &config.saturation, 0.0f, 1.0f);
+        ImGui::ColorEdit3("color filter", (float*)&config.colorFilter);
 
 
         ImGui::Text("Shading model: ");
@@ -662,7 +665,8 @@ void initFrameBuffers(GLFWwindow* window)
     // TODO 9.1 : Change the format of the accumulation buffer to 16bit floating point (4 components)
     glGenTextures(1, &gAccum);
     glBindTexture(GL_TEXTURE_2D, gAccum);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8_ALPHA8, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
