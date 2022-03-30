@@ -58,7 +58,7 @@ void main()
 
 
    //TODO 9.1 : Apply tone mapping using the exposure uniform
-   vec3 color = hdrColor * exposure;
+   vec3 color =  vec3(1 - exp(-hdrColor * exposure));
 
 
    //TODO 9.2 : Modify contrast
