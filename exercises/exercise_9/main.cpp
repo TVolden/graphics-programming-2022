@@ -347,7 +347,7 @@ int main()
             //TODO 9.4 : Bloom pass
             if (tempBuffers[0] != 0)
             {
-                shader = copy_shader;
+                shader = bloom_shader;
                 shader->use();
 
                 glBindFramebuffer(GL_FRAMEBUFFER, tempBuffers[0]);
